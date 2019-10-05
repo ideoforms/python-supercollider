@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+dist/
+sdist/
+.DS_Store
+*.swp
+*.pickle
+.idea
