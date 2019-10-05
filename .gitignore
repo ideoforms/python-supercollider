@@ -2,6 +2,7 @@ __pycache__/
 *.pyc
 dist/
 sdist/
+*.egg-info/
 .DS_Store
 *.swp
 *.pickle
