@@ -31,6 +31,22 @@ class Server(object):
             "/n_set": {}
         }
 
+    def get_status(self, fn):
+        def handle_status(args):
+            args_dict = {
+                "num_ugens": args[1],
+                "num_synths": args[2],
+                "num_groups": args[3],
+                "num_synthdefs": args[4],
+                "cpu_average": args[5],
+                "cpu_peak": args[6],
+                "sample_rate_nominal": args[7],
+                "sample_rate_actual": args[8],
+            }
+            fn(args_dict)
+        self.handlers["/status.reply"] = handle_status
+        self._send_msg("/status")
+
     def _send_msg(self, msg, *args):
         liblo.send(self.client_address, msg, *args)
 
@@ -45,6 +61,9 @@ class Server(object):
             if (node_id, parameter) in self.handlers["/n_set"]:
                 handler = self.handlers["/n_set"][(node_id, parameter)]
                 handler(value)
+        elif address == "/status.reply":
+            if self.handlers[address]:
+                self.handlers[address](args)
         elif address == "/fail":
             logger.warning("Received failure: %s" % args)
         else:
