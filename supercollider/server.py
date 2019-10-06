@@ -32,7 +32,28 @@ class Server(object):
         }
 
     def get_status(self, fn):
-        def handle_status(args):
+        """
+        Query the current Server status, including the number of active units, CPU
+        load, etc.
+
+        Args:
+            fn (function): Callback to receive server status, which is passed a
+                           dict of key/value pairs.
+
+        Example:
+            >>> server.get_status(lambda status: print(status))
+            {
+                'num_ugens': 5,
+                'num_synths': 1,
+                'num_groups': 2,
+                'num_synthdefs': 107,
+                'cpu_average': 0.08170516043901443,
+                'cpu_peak': 0.34912213683128357,
+                'sample_rate_nominal': 44100.0,
+                'sample_rate_actual': 44100.07866992249
+            }
+        """
+        def _handle_status(args):
             args_dict = {
                 "num_ugens": args[1],
                 "num_synths": args[2],
@@ -44,7 +65,7 @@ class Server(object):
                 "sample_rate_actual": args[8],
             }
             fn(args_dict)
-        self.handlers["/status.reply"] = handle_status
+        self.handlers["/status.reply"] = _handle_status
         self._send_msg("/status")
 
     def _send_msg(self, msg, *args):
