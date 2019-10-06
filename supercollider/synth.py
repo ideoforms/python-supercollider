@@ -17,8 +17,8 @@ class Synth(object):
         self.server = server
         self.name = name
         self.args = args
-        self.id = globals.last_node_id
-        globals.last_node_id += 1
+        self.id = globals.LAST_NODE_ID
+        globals.LAST_NODE_ID += 1
 
         args_list = []
         if args:

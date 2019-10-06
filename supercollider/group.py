@@ -13,8 +13,8 @@ class Group(object):
             action (int): The add action.
         """
         self.server = server
-        self.id = globals.last_node_id
-        globals.last_node_id += 1
+        self.id = globals.LAST_NODE_ID
+        globals.LAST_NODE_ID += 1
 
         self.server._send_msg("/g_new", self.id, action, target)
 
