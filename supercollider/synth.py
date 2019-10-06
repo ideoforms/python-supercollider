@@ -3,7 +3,7 @@ from . import globals
 class Synth(object):
     """ Encapsulates a SuperCollider Synth object.
     """
-    def __init__(self, server, name, args=None, action=0, target=0):
+    def __init__(self, server, name, args=None, action=0, target=None):
         """
         Create a new Synth.
 
@@ -24,7 +24,8 @@ class Synth(object):
         if args:
             args_list = [b for a in list(args.items()) for b in a]
 
-        self.server._send_msg("/s_new", self.name, self.id, action, target, *args_list)
+        target_id = target.id if target else 0
+        self.server._send_msg("/s_new", self.name, self.id, action, target_id, *args_list)
 
     def set(self, parameter, value):
         """
