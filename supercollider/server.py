@@ -28,7 +28,9 @@ class Server(object):
         self.osc_server_thread.setDaemon(True)
         self.osc_server_thread.start()
         self.handlers = {
-            "/n_set": {}
+            "/n_set": {},
+            "/b_info": {},
+            "/status.reply": None
         }
 
     def get_status(self, fn):
@@ -53,7 +55,7 @@ class Server(object):
                 'sample_rate_actual': 44100.07866992249
             }
         """
-        def _handle_status(args):
+        def _handler(args):
             args_dict = {
                 "num_ugens": args[1],
                 "num_synths": args[2],
@@ -65,15 +67,18 @@ class Server(object):
                 "sample_rate_actual": args[8],
             }
             fn(args_dict)
-        self.handlers["/status.reply"] = _handle_status
+        self._add_handler("/status.reply", None, _handler)
         self._send_msg("/status")
 
     def _send_msg(self, msg, *args):
         liblo.send(self.client_address, msg, *args)
 
-    def _add_handler(self, address, node_id, parameter, fn):
+    def _add_handler(self, address, match_args, fn):
         assert address in self.handlers
-        self.handlers[address][(node_id, parameter)] = fn
+        if isinstance(self.handlers[address], dict):
+            self.handlers[address][tuple(match_args)] = fn
+        else:
+            self.handlers[address] = fn
 
     def _osc_handler(self, address, args):
         logger.debug("Received OSC: %s, %s" % (address, args))
@@ -82,6 +87,12 @@ class Server(object):
             if (node_id, parameter) in self.handlers["/n_set"]:
                 handler = self.handlers["/n_set"][(node_id, parameter)]
                 handler(value)
+        elif address == "/b_info":
+            buffer_id = args[0]
+            values = args[1:]
+            if (buffer_id,) in self.handlers["/b_info"]:
+                handler = self.handlers["/b_info"][(buffer_id,)]
+                handler(*values)
         elif address == "/status.reply":
             if self.handlers[address]:
                 self.handlers[address](args)

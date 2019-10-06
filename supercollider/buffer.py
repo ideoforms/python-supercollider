@@ -48,3 +48,19 @@ class Buffer(object):
         Free the buffer.
         """
         self.server._send_msg("/b_free", self.id)
+
+    def get_info(self, fn):
+        """
+        Get the buffer's status.
+        """
+
+        def _handler(*args):
+            rv = {
+                "num_frames" : args[0],
+                "num_channnels" : args[1],
+                "sample_rate"  : args[2]
+            }
+            fn(rv)
+
+        self.server._send_msg("/b_query", self.id)
+        self.server._add_handler("/b_info", [ self.id ], _handler)
