@@ -27,8 +27,7 @@ server = Server()
 # Create a Buffer, loop playback, and periodically rewrite its contents
 # with uniformly random samples.
 #-------------------------------------------------------------------------------
-buf = Buffer(server, 1024)
-time.sleep(0.1)
+buf = Buffer.alloc(server, 1024)
 buf.setn([ random.uniform(-1, 1) for n in range(buf.num_frames) ])
 synth = Synth(server, 'playbuf', { "buffer" : buf, "gain" : -24.0 })
 try:
