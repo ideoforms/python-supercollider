@@ -1,5 +1,4 @@
-last_node_id = 1000
-
+from . import globals
 
 class Synth(object):
     """ Encapsulates a SuperCollider Synth object.
@@ -15,13 +14,11 @@ class Synth(object):
             target (int): The Group to create the Synth in, default 0.
             action (int): The add action.
         """
-        global last_node_id
-
         self.server = server
         self.name = name
         self.args = args
-        self.id = last_node_id
-        last_node_id += 1
+        self.id = globals.last_node_id
+        globals.last_node_id += 1
 
         args_list = []
         if args:
