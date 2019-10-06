@@ -11,11 +11,12 @@ Example:
 """
 
 __author__ = "Daniel Jones <http://www.erase.net/>"
-__all__ = ["Server", "Synth", "Group"]
+__all__ = ["Server", "Synth", "Group", "Buffer"]
 __all__ += ["ADD_AFTER", "ADD_BEFORE", "ADD_REPLACE", "ADD_TO_HEAD", "ADD_TO_TAIL"]
 
 from .server import Server
 from .synth import Synth
 from .group import Group
+from .buffer import Buffer
 
 from .globals import ADD_AFTER, ADD_BEFORE, ADD_REPLACE, ADD_TO_HEAD, ADD_TO_TAIL

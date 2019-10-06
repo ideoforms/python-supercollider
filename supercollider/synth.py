@@ -1,4 +1,5 @@
 from . import globals
+from .buffer import Buffer
 
 class Synth(object):
     """ Encapsulates a SuperCollider Synth object.
@@ -22,7 +23,11 @@ class Synth(object):
 
         args_list = []
         if args:
-            args_list = [b for a in list(args.items()) for b in a]
+            for item, value in args.items():
+                if isinstance(value, Buffer):
+                    args_list += [ item, value.id ]
+                else:
+                    args_list += [ item, value ]
 
         target_id = target.id if target else 0
         self.server._send_msg("/s_new", self.name, self.id, action, target_id, *args_list)
