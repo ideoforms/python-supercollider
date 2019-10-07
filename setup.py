@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name = 'supercollider',
-    version = '0.0.1',
+    version = '0.0.2',
     description = 'Interact with the SuperCollider audio synthesis engine',
     long_description = open("README.md", "r").read(),
     long_description_content_type = "text/markdown",
