@@ -120,7 +120,7 @@ class Server(object):
     def _send_msg(self, msg, *args):
         liblo.send(self.client_address, msg, *args)
 
-    def _await_response(self, address, match_args, callback=None):
+    def _await_response(self, address, match_args, callback=lambda rv: rv):
         event = threading.Event()
         rv = None
 
