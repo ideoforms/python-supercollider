@@ -36,17 +36,14 @@ class Server(object):
             "/version.reply": None
         }
 
-    def get_status(self, callback=None, blocking=True):
+    @property
+    def status(self):
         """
         Query the current Server status, including the number of active units, CPU
         load, etc.
 
-        Args:
-            fn (function): Callback to receive server status, which is passed a
-                           dict of key/value pairs.
-
         Example:
-            >>> server.get_status()
+            >>> server.status
             {
                 'num_ugens': 5,
                 'num_synths': 1,
@@ -58,6 +55,9 @@ class Server(object):
                 'sample_rate_actual': 44100.07866992249
             }
         """
+        return self._get_status()
+
+    def _get_status(self, callback=None, blocking=True):
         def _handler(args):
             args_dict = {
                 "num_ugens": args[1],
@@ -73,22 +73,19 @@ class Server(object):
                 callback(args_dict)
             return args_dict
 
-        self._add_handler("/status.reply", None, _handler)
+        self._send_msg("/status")
         if blocking:
-            return self._await_response("/version.reply", None, _handler)
+            return self._await_response("/status.reply", None, _handler)
         elif callback:
-            self._add_handler("/version.reply", None, _handler)
+            self._add_handler("/status.reply", None, _handler)
 
-    def get_version(self, callback=None, blocking=True):
+    @property
+    def version(self):
         """
-        Query the current Server version.
-
-        Args:
-            callback (function): Callback to receive server version, which is passed a dict of key/value pairs.
-            blocking (bool): Wait for the write task to complete before returning, and return the version dict.
+        Returns the current Server version.
 
         Example:
-            >>> server.get_version()
+            >>> server.version
             {
                 'program_name': "scsynth",
                 'version_major': 3,
@@ -98,6 +95,9 @@ class Server(object):
                 'commit_hash': "67a1eb18"
             }
         """
+        return self._get_version()
+
+    def _get_version(self, callback=None, blocking=True):
         def _handler(args):
             args_dict = {
                 "program_name": args[0],
@@ -120,7 +120,7 @@ class Server(object):
     def _send_msg(self, msg, *args):
         liblo.send(self.client_address, msg, *args)
 
-    def _await_response(self, address, match_args, callback=lambda rv: rv):
+    def _await_response(self, address, match_args, callback=lambda rv=None: rv):
         event = threading.Event()
         rv = None
 
@@ -148,14 +148,11 @@ class Server(object):
         if address == "/n_set":
             node_id, parameter, value = tuple(args)
             if (node_id, parameter) in self.handlers["/n_set"]:
-                handler = self.handlers["/n_set"][(node_id, parameter)]
-                handler(value)
+                self.handlers["/n_set"][(node_id, parameter)](value)
         elif address == "/b_info":
-            buffer_id = args[0]
-            values = args[1:]
+            buffer_id, *values = tuple(args)
             if (buffer_id,) in self.handlers["/b_info"]:
-                handler = self.handlers["/b_info"][(buffer_id,)]
-                handler(*values)
+                self.handlers["/b_info"][(buffer_id,)](values)
         elif address == "/status.reply" or address == "/version.reply":
             if self.handlers[address]:
                 self.handlers[address](args)

@@ -45,15 +45,14 @@ class Synth(object):
     def get(self, parameter, callback=None, blocking=True):
         """
         Get the current value of a named parameter of the Synth.
-        This action is asynchronous as it queries the server. It thus returns None,
-        and a function `fn` must be specified to receive the return value.
 
         Args:
-            parameter:
-            fn: Handler which is passed the value as a single argument.
+            parameter (str): The name of the parameter to query.
+            callback (function): Called when the return value is received from the SC server.
+            blocking (bool): Set to False to query the value asynchronously and return None.
 
         Example:
-            >>> synth.get("freq", lambda f: print(f))
+            >>> synth.get("freq")
             440.0
         """
 

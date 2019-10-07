@@ -129,18 +129,30 @@ class Buffer(object):
         """
         self.server._send_msg("/b_free", self.id)
 
-    def get_info(self, fn):
+    @property
+    def info(self):
         """
-        Get the buffer's status.
-        """
+        Returns info about the Buffer.
 
-        def _handler(*args):
+        Example:
+            >>> buffer.info
+            {'num_frames': 1024, 'num_channels': 1, 'sample_rate': 44100.0}
+        """
+        return self._get_info()
+
+    def _get_info(self, callback=None, blocking=True):
+        def _handler(args):
             rv = {
-                "num_frames" : args[0],
-                "num_channnels" : args[1],
-                "sample_rate"  : args[2]
+                "num_frames": args[0],
+                "num_channels": args[1],
+                "sample_rate": args[2]
             }
-            fn(rv)
+            if callback:
+                callback(rv)
+            return rv
 
         self.server._send_msg("/b_query", self.id)
-        self.server._add_handler("/b_info", [ self.id ], _handler)
+        if blocking:
+            return self.server._await_response("/b_info", [self.id], _handler)
+        else:
+            self.server._add_handler("/b_info", [self.id], _handler)
