@@ -25,7 +25,7 @@ print("Server version: %s" % server.version)
 # Create a Synth, set its parameter, query the parameter, and free it.
 #-------------------------------------------------------------------------------
 try:
-    synth = Synth(server, "sine", { "freq" : 440.0, "gain" : -36.0 })
+    synth = Synth(server, "sine", { "freq" : 440.0, "gain" : -18.0 })
     print("Created synth")
     print("Frequency: %.1f" % synth.get("freq"))
     while True:
