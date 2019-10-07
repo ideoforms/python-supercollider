@@ -30,7 +30,8 @@ class Server(object):
         self.handlers = {
             "/n_set": {},
             "/b_info": {},
-            "/status.reply": None
+            "/status.reply": None,
+            "/version.reply": None
         }
 
     def get_status(self, fn):
@@ -70,6 +71,38 @@ class Server(object):
         self._add_handler("/status.reply", None, _handler)
         self._send_msg("/status")
 
+    def get_version(self, fn):
+        """
+        Query the current Server version.
+
+        Args:
+            fn (function): Callback to receive server version, which is passed a
+                           dict of key/value pairs.
+
+        Example:
+            >>> server.get_version(lambda version: print(version))
+            {
+                'program_name': "scsynth",
+                'version_major': 3,
+                'version_minor': 10,
+                'version_patch': ".3",
+                'git_branch': "HEAD",
+                'commit_hash': "67a1eb18"
+            }
+        """
+        def _handler(args):
+            args_dict = {
+                "program_name": args[0],
+                "version_major": args[1],
+                "version_minor": args[2],
+                "version_patch": args[3],
+                "git_branch": args[4],
+                "commit_hash": args[5]
+            }
+            fn(args_dict)
+        self._add_handler("/version.reply", None, _handler)
+        self._send_msg("/version")
+
     def _send_msg(self, msg, *args):
         liblo.send(self.client_address, msg, *args)
 
@@ -93,7 +126,7 @@ class Server(object):
             if (buffer_id,) in self.handlers["/b_info"]:
                 handler = self.handlers["/b_info"][(buffer_id,)]
                 handler(*values)
-        elif address == "/status.reply":
+        elif address == "/status.reply" or address == "/version.reply":
             if self.handlers[address]:
                 self.handlers[address](args)
         elif address == "/fail":
