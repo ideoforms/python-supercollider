@@ -112,36 +112,38 @@ class Server(object):
             return args_dict
 
         self._send_msg("/version")
-        if blocking:
-            return self._await_response("/version.reply", None, _handler)
-        elif callback:
-            self._add_handler("/version.reply", None, _handler)
+        return self._add_handler("/version.reply", None, _handler, blocking=blocking)
 
     def _send_msg(self, msg, *args):
         liblo.send(self.client_address, msg, *args)
 
-    def _await_response(self, address, match_args, callback=None):
-        event = threading.Event()
-        rv = None
-
-        def unblocking_callback(*args):
-            event.set()
-            if callback:
-                nonlocal rv
-                rv = callback(*args)
-
-        self._add_handler(address, match_args, unblocking_callback)
-        event.wait(globals.RESPONSE_TIMEOUT)
-
-        return rv
-
-    def _add_handler(self, address, match_args, callback):
+    def _add_handler(self, address, match_args, callback=None, blocking=False):
         assert address in self.handlers
 
+        rv = None
+        if callback is None:
+            callback = lambda n: n
+        wrapped_callback = callback
+        if blocking:
+            event = threading.Event()
+
+            def unblocking_callback(*args):
+                if callback:
+                    nonlocal rv
+                    rv = callback(*args)
+                event.set()
+            wrapped_callback = unblocking_callback
+
         if isinstance(self.handlers[address], dict):
-            self.handlers[address][tuple(match_args)] = callback
+            self.handlers[address][tuple(match_args)] = wrapped_callback
         else:
-            self.handlers[address] = callback
+            self.handlers[address] = wrapped_callback
+
+        if event:
+            print("waiting for event...")
+            event.wait(globals.RESPONSE_TIMEOUT)
+
+        return rv
 
     def _osc_handler(self, address, args):
         logger.debug("Received OSC: %s, %s" % (address, args))

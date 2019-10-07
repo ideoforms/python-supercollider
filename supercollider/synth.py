@@ -59,10 +59,7 @@ class Synth(object):
 
         self.server._send_msg("/s_get", self.id, parameter)
 
-        if blocking:
-            return self.server._await_response("/n_set", [self.id, parameter], lambda n: n)
-        else:
-            self.server._add_handler("/n_set", [self.id, parameter], callback)
+        return self.server._add_handler("/n_set", [self.id, parameter], callback, blocking)
 
     def free(self):
         """
