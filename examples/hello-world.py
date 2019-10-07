@@ -18,6 +18,8 @@ import time
 # Create connection to default server on localhost:57110
 #-------------------------------------------------------------------------------
 server = Server()
+print("Created server")
+print("Server version: %s" % server.version)
 
 #-------------------------------------------------------------------------------
 # Create a Synth, set its parameter, query the parameter, and free it.
@@ -25,7 +27,7 @@ server = Server()
 try:
     synth = Synth(server, "sine", { "freq" : 440.0, "gain" : -36.0 })
     print("Created synth")
-    synth.get("freq", lambda n: print("Frequency: %.1f" % n))
+    print("Frequency: %.1f" % synth.get("freq"))
     while True:
         time.sleep(0.1)
 except KeyboardInterrupt:
