@@ -2,15 +2,17 @@ from . import globals
 from .globals import SAMPLE_FORMAT_FLOAT
 from .globals import HEADER_FORMAT_WAV
 import os
+import threading
 
 class Buffer(object):
     """ Encapsulates a SuperCollider Buffer object.
     """
     def __init__(self, server, id=0):
         """
-        Creates a Buffer object, but does not allocate any memory for it.
-        This constructor should only be used if you want to create an object
-        to interface with an already-created buffer.
+        Creates a Buffer object, but does not allocate any memory for it. This constructor should only be used if
+        you want to create an object to interface with an already-created buffer.
+
+        If the `id` passed is None, the created Buffer will have an automatically-allocated id.
 
         Args:
             server (Server): The SC server on which the Group is created.
@@ -27,7 +29,7 @@ class Buffer(object):
             self.id = id
 
     @classmethod
-    def alloc(cls, server, num_frames, num_channels=1):
+    def alloc(cls, server, num_frames, num_channels=1, blocking=True):
         """
         Create and allocate a new Buffer.
 
@@ -35,6 +37,7 @@ class Buffer(object):
             server (Server): The SC server on which the Buffer is allocated.
             num_frames (int): The number of frames to allocate.
             num_channels (int): The number of channels in the buffer.
+            blocking (bool): Wait for the alloc task to complete before returning.
 
         Returns:
             A new Buffer object.
@@ -43,10 +46,14 @@ class Buffer(object):
         buf.num_frames = num_frames
         buf.num_channels = num_channels
         buf.server._send_msg("/b_alloc", buf.id, num_frames, num_channels)
+
+        if blocking:
+            buf.server._await_response("/done", ["/b_alloc", buf.id])
+
         return buf
 
     @classmethod
-    def read(cls, server, path, start_frame=0, num_frames=0):
+    def read(cls, server, path, start_frame=0, num_frames=0, blocking=True):
         """
         Create a new Buffer and read its contents from disk.
 
@@ -55,6 +62,7 @@ class Buffer(object):
             path (str): The pathname to the audio file to read.
             start_frame (int): The frame index to start reading from.
             num_frames (int): The number of frames to read.
+            blocking (bool): Wait for the read task to complete before returning.
 
         Returns:
             A new Buffer object.
@@ -69,9 +77,14 @@ class Buffer(object):
             path = os.path.abspath(path)
         buf = Buffer(server, id=None)
         buf.server._send_msg("/b_allocRead", buf.id, path, start_frame, num_frames)
+
+        if blocking:
+            buf.server._await_response("/done", ["/b_allocRead", buf.id])
+
         return buf
 
-    def write(self, path, header_format=HEADER_FORMAT_WAV, sample_format=SAMPLE_FORMAT_FLOAT, num_frames=-1, start_frame=0, leave_open=False):
+    def write(self, path, header_format=HEADER_FORMAT_WAV, sample_format=SAMPLE_FORMAT_FLOAT,
+              num_frames=-1, start_frame=0, leave_open=False, blocking=True):
         """
         Write the Buffer's contents to an audio file.
 
@@ -82,8 +95,13 @@ class Buffer(object):
             num_frames (int): The number of frames to write. Defaults to the full buffer.
             start_frame (int): Index of the first frame to write.
             leave_open (bool): Whether to leave the file open after write.
+            blocking (bool): Wait for the write task to complete before returning.
         """
-        self.server._send_msg("/b_write", self.id, path, header_format, sample_format, num_frames, start_frame, int(leave_open))
+        self.server._send_msg("/b_write", self.id, path, header_format, sample_format,
+                              num_frames, start_frame, int(leave_open))
+
+        if blocking:
+            self.server._await_response("/done", ["/b_write", self.id])
 
     def setn(self, samples, start_index=0):
         """
@@ -98,6 +116,7 @@ class Buffer(object):
     def fill(self, count, value, start_index=0):
         """
         Fill the Buffer's contents with a specified sample.
+
         Args:
             count (int): The number of frames to write.
             value (float): The sample to write.

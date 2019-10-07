@@ -1,6 +1,7 @@
 import liblo
 import logging
 import threading
+from . import globals
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,7 @@ class Server(object):
         self.handlers = {
             "/n_set": {},
             "/b_info": {},
+            "/done": {},
             "/status.reply": None,
             "/version.reply": None
         }
@@ -106,12 +108,22 @@ class Server(object):
     def _send_msg(self, msg, *args):
         liblo.send(self.client_address, msg, *args)
 
-    def _add_handler(self, address, match_args, fn):
+    def _await_response(self, address, match_args):
+        event = threading.Event()
+
+        def callback():
+            event.set()
+        self._add_handler(address, match_args, callback)
+
+        event.wait(globals.RESPONSE_TIMEOUT)
+
+    def _add_handler(self, address, match_args, callback):
         assert address in self.handlers
+
         if isinstance(self.handlers[address], dict):
-            self.handlers[address][tuple(match_args)] = fn
+            self.handlers[address][tuple(match_args)] = callback
         else:
-            self.handlers[address] = fn
+            self.handlers[address] = callback
 
     def _osc_handler(self, address, args):
         logger.debug("Received OSC: %s, %s" % (address, args))
@@ -131,6 +143,9 @@ class Server(object):
                 self.handlers[address](args)
         elif address == "/fail":
             logger.warning("Received failure: %s" % args)
+        elif address == "/done":
+            if tuple(args) in self.handlers["/done"]:
+                self.handlers["/done"][tuple(args)]()
         else:
             pass
 
