@@ -2,7 +2,6 @@ from . import globals
 from .globals import SAMPLE_FORMAT_FLOAT
 from .globals import HEADER_FORMAT_WAV
 import os
-import threading
 
 class Buffer(object):
     """ Encapsulates a SuperCollider Buffer object.

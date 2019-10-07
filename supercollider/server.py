@@ -36,7 +36,7 @@ class Server(object):
             "/version.reply": None
         }
 
-    def get_status(self, fn):
+    def get_status(self, callback=None, blocking=True):
         """
         Query the current Server status, including the number of active units, CPU
         load, etc.
@@ -46,7 +46,7 @@ class Server(object):
                            dict of key/value pairs.
 
         Example:
-            >>> server.get_status(lambda status: print(status))
+            >>> server.get_status()
             {
                 'num_ugens': 5,
                 'num_synths': 1,
@@ -69,20 +69,26 @@ class Server(object):
                 "sample_rate_nominal": args[7],
                 "sample_rate_actual": args[8],
             }
-            fn(args_dict)
-        self._add_handler("/status.reply", None, _handler)
-        self._send_msg("/status")
+            if callback:
+                callback(args_dict)
+            return args_dict
 
-    def get_version(self, fn):
+        self._add_handler("/status.reply", None, _handler)
+        if blocking:
+            return self._await_response("/version.reply", None, _handler)
+        elif callback:
+            self._add_handler("/version.reply", None, _handler)
+
+    def get_version(self, callback=None, blocking=True):
         """
         Query the current Server version.
 
         Args:
-            fn (function): Callback to receive server version, which is passed a
-                           dict of key/value pairs.
+            callback (function): Callback to receive server version, which is passed a dict of key/value pairs.
+            blocking (bool): Wait for the write task to complete before returning, and return the version dict.
 
         Example:
-            >>> server.get_version(lambda version: print(version))
+            >>> server.get_version()
             {
                 'program_name': "scsynth",
                 'version_major': 3,
@@ -101,21 +107,33 @@ class Server(object):
                 "git_branch": args[4],
                 "commit_hash": args[5]
             }
-            fn(args_dict)
-        self._add_handler("/version.reply", None, _handler)
+            if callback:
+                callback(args_dict)
+            return args_dict
+
         self._send_msg("/version")
+        if blocking:
+            return self._await_response("/version.reply", None, _handler)
+        elif callback:
+            self._add_handler("/version.reply", None, _handler)
 
     def _send_msg(self, msg, *args):
         liblo.send(self.client_address, msg, *args)
 
-    def _await_response(self, address, match_args):
+    def _await_response(self, address, match_args, callback=None):
         event = threading.Event()
+        rv = None
 
-        def callback():
+        def unblocking_callback(*args):
             event.set()
-        self._add_handler(address, match_args, callback)
+            if callback:
+                nonlocal rv
+                rv = callback(*args)
 
+        self._add_handler(address, match_args, unblocking_callback)
         event.wait(globals.RESPONSE_TIMEOUT)
+
+        return rv
 
     def _add_handler(self, address, match_args, callback):
         assert address in self.handlers
