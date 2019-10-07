@@ -42,7 +42,7 @@ class Synth(object):
         """
         self.server._send_msg("/n_set", self.id, parameter, value)
 
-    def get(self, parameter, fn):
+    def get(self, parameter, callback=None, blocking=True):
         """
         Get the current value of a named parameter of the Synth.
         This action is asynchronous as it queries the server. It thus returns None,
@@ -56,8 +56,13 @@ class Synth(object):
             >>> synth.get("freq", lambda f: print(f))
             440.0
         """
-        self.server._add_handler("/n_set", [ self.id, parameter ], fn)
+
         self.server._send_msg("/s_get", self.id, parameter)
+
+        if blocking:
+            return self.server._await_response("/n_set", [self.id, parameter], lambda n: n)
+        else:
+            self.server._add_handler("/n_set", [self.id, parameter], callback)
 
     def free(self):
         """
