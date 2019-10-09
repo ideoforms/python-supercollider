@@ -36,6 +36,11 @@ class Server(object):
             "/version.reply": None
         }
 
+        #-----------------------------------------------------------------------
+        # Necessary when querying a node ID for add actions.
+        #-----------------------------------------------------------------------
+        self.id = 0
+
     @property
     def status(self):
         """
