@@ -28,6 +28,8 @@ synth = Synth(server, "sine", { "freq" : 440.0, "gain" : -12.0 })
 synth.set("freq", 880.0)
 ```
 
+For further examples, see [examples](examples).
+
 ## See also
 
 If you want a more fully-fledged approach that lets you construct and compile `SynthDef`s from Python, you'd be better with [Supriya](https://github.com/josiah-wolf-oberholtzer/supriya).
