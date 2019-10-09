@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.0.3](https://github.com/ideoforms/python-supercollider/releases/tag/v0.0.3) (2019-10-09)
+
+- Add `AudioBus`/`ControlBus`
+- Add further examples: `buffer-read`, `buffer-set`, `buffer-write`, `bus-example`
+
 ## [v0.0.2](https://github.com/ideoforms/python-supercollider/releases/tag/v0.0.2) (2019-10-07)
 
 - Add `Buffer`
