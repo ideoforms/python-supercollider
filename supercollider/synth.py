@@ -1,10 +1,11 @@
 from . import globals
 from .buffer import Buffer
+from .bus import Bus
 
 class Synth(object):
     """ Encapsulates a SuperCollider Synth object.
     """
-    def __init__(self, server, name, args=None, action=0, target=None):
+    def __init__(self, server, name, args=None, action=globals.ADD_TO_HEAD, target=None):
         """
         Create a new Synth.
 
@@ -13,7 +14,7 @@ class Synth(object):
             name (str): The name of the SynthDef.
             args (dict): A dict of parameters and values.
             target (int): The Group to create the Synth in, default 0.
-            action (int): The add action.
+            action (int): The add action. See supercollider.globals for available actions.
         """
         self.server = server
         self.name = name
@@ -24,7 +25,10 @@ class Synth(object):
         args_list = []
         if args:
             for item, value in args.items():
+                # TODO: Move this to a more general place (so `set` can also work with Bus/Buffer objects)
                 if isinstance(value, Buffer):
+                    args_list += [ item, value.id ]
+                elif isinstance(value, Bus):
                     args_list += [ item, value.id ]
                 else:
                     args_list += [ item, value ]
