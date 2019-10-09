@@ -102,7 +102,7 @@ class Buffer(object):
         if blocking:
             self.server._await_response("/done", ["/b_write", self.id])
 
-    def setn(self, samples, start_index=0):
+    def set(self, samples, start_index=0):
         """
         Set the Buffer's contents to the values given in the supplied float array.
 
