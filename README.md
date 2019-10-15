@@ -7,8 +7,8 @@ A lightweight Python module to control the [SuperCollider](https://supercollider
 The `liblo` library is required for the underlying OSC communications.
 
 ```
-brew install liblo # macOS
-apt-get install liblo7 # Linux
+brew install liblo               # macOS
+apt-get install liblo7 liblo-dev # Linux
 ```
 
 Install the Python package:
@@ -18,6 +18,18 @@ pip3 install supercollider
 ```
 
 ## Usage
+
+Before using the library, start the SuperCollider server, either through the SuperCollider GUI or with `scsynth -u 57110`.
+
+Within the SC client, create the below SynthDef:
+
+```
+SynthDef(\sine, { |out = 0, freq = 440.0, gain = 0.0|
+    Out.ar(out, SinOsc.ar(freq) * gain.dbamp);
+}).store;
+```
+
+From Python, you can now create and trigger Synths:
 
 ```python
 from supercollider import Server, Synth
