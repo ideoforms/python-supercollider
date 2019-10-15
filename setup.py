@@ -12,7 +12,7 @@ setup(
     author_email = 'dan-code@erase.net',
     url = 'https://github.com/ideoforms/supercollider',
     packages = ['supercollider'],
-    install_requires = ['pyliblo >= 0.9.1'],
+    install_requires = ['cython', 'pyliblo >= 0.9.1'],
     keywords = ('sound', 'music', 'supercollider', 'synthesis'),
     classifiers = [
         'Topic :: Multimedia :: Sound/Audio',
