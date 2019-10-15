@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.0.4](https://github.com/ideoforms/python-supercollider/releases/tag/v0.0.4) (2019-10-15)
+
+- Fixed Linux dependencies (thanks to Dan Stowell)
+
 ## [v0.0.3](https://github.com/ideoforms/python-supercollider/releases/tag/v0.0.3) (2019-10-09)
 
 - Add `AudioBus`/`ControlBus`
