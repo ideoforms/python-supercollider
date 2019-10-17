@@ -28,7 +28,7 @@ server = Server()
 # with uniformly random samples.
 #-------------------------------------------------------------------------------
 buf = Buffer.alloc(server, 1024)
-print("Created buffer: %s" % buf.info)
+print("Created buffer: %s" % buf.get_info())
 
 synth = Synth(server, 'playbuf', { "buffer" : buf, "gain" : -18.0 })
 try:

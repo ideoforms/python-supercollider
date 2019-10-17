@@ -33,7 +33,8 @@ class Server(object):
             "/b_info": {},
             "/done": {},
             "/status.reply": None,
-            "/version.reply": None
+            "/version.reply": None,
+            "/sync": None
         }
 
         #-----------------------------------------------------------------------
@@ -41,8 +42,7 @@ class Server(object):
         #-----------------------------------------------------------------------
         self.id = 0
 
-    @property
-    def status(self):
+    def get_status(self, callback=None, blocking=True):
         """
         Query the current Server status, including the number of active units, CPU
         load, etc.
@@ -60,9 +60,6 @@ class Server(object):
                 'sample_rate_actual': 44100.07866992249
             }
         """
-        return self._get_status()
-
-    def _get_status(self, callback=None, blocking=True):
         def _handler(args):
             args_dict = {
                 "num_ugens": args[1],
@@ -84,8 +81,7 @@ class Server(object):
         elif callback:
             self._add_handler("/status.reply", None, _handler)
 
-    @property
-    def version(self):
+    def get_version(self, callback=None, blocking=True):
         """
         Returns the current Server version.
 
@@ -100,9 +96,6 @@ class Server(object):
                 'commit_hash': "67a1eb18"
             }
         """
-        return self._get_version()
-
-    def _get_version(self, callback=None, blocking=True):
         def _handler(args):
             args_dict = {
                 "program_name": args[0],

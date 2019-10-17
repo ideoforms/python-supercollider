@@ -129,8 +129,7 @@ class Buffer(object):
         """
         self.server._send_msg("/b_free", self.id)
 
-    @property
-    def info(self):
+    def get_info(self, callback=None, blocking=True):
         """
         Returns info about the Buffer.
 
@@ -138,9 +137,6 @@ class Buffer(object):
             >>> buffer.info
             {'num_frames': 1024, 'num_channels': 1, 'sample_rate': 44100.0}
         """
-        return self._get_info()
-
-    def _get_info(self, callback=None, blocking=True):
         def _handler(args):
             rv = {
                 "num_frames": args[0],

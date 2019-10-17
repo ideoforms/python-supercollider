@@ -19,7 +19,7 @@ import time
 #-------------------------------------------------------------------------------
 server = Server()
 print("Created server")
-print("Server version: %s" % server.version)
+print("Server version: %s" % server.get_version())
 
 #-------------------------------------------------------------------------------
 # Create a Synth, set its parameter, query the parameter, and free it.
