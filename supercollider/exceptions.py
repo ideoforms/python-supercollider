@@ -1,5 +1,5 @@
 class SuperColliderConnectionError (Exception):
     pass
 
-class SuperColliderAllocatorError (Exception):
+class SuperColliderAllocationError (Exception):
     pass

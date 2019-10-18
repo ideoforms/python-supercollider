@@ -22,7 +22,7 @@ from .synth import Synth
 from .group import Group
 from .buffer import Buffer
 from .bus import ControlBus, AudioBus
-from .exceptions import SuperColliderConnectionError, SuperColliderAllocatorError
+from .exceptions import SuperColliderConnectionError, SuperColliderAllocationError
 
 from .globals import ADD_AFTER, ADD_BEFORE, ADD_REPLACE, ADD_TO_HEAD, ADD_TO_TAIL
 from .globals import HEADER_FORMAT_WAV, HEADER_FORMAT_AIFF, HEADER_FORMAT_IRCAM, HEADER_FORMAT_NEXT, HEADER_FORMAT_RAW
