@@ -1,0 +1,2 @@
+class SuperColliderConnectionError (Exception):
+    pass

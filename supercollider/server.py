@@ -2,6 +2,7 @@ import liblo
 import logging
 import threading
 from . import globals
+from .exceptions import SuperColliderConnectionError
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,18 @@ class Server(object):
         # Necessary when querying a node ID for add actions.
         #-----------------------------------------------------------------------
         self.id = 0
+        self.sync()
+
+    def sync(self):
+        """
+        Causes the server to immediately execute and flush all asynchronous commands.
+        This command is always synchronous so blocks the current thread.
+
+        This can be used as a `ping` functionality to check that the server is running
+        and responding.
+        """
+        self._send_msg("/sync")
+        return self._await_response("/sync", None, lambda n: True)
 
     def get_status(self, callback=None, blocking=True):
         """
@@ -129,7 +142,9 @@ class Server(object):
                 rv = callback(*args)
 
         self._add_handler(address, match_args, unblocking_callback)
-        event.wait(globals.RESPONSE_TIMEOUT)
+        responded_before_timeout = event.wait(globals.RESPONSE_TIMEOUT)
+        if not responded_before_timeout:
+            raise SuperColliderConnectionError("Connection to SuperCollider server timed out. Is scsynth running?")
 
         return rv
 
