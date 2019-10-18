@@ -44,4 +44,5 @@ For further examples, see [examples](examples).
 
 ## See also
 
-If you want a more fully-fledged approach that lets you construct and compile `SynthDef`s from Python, you'd be better with [Supriya](https://github.com/josiah-wolf-oberholtzer/supriya).
+* If you want a more comprehensive framework that lets you construct and compile SynthDefs from Python, take a look at [Supriya](https://github.com/josiah-wolf-oberholtzer/supriya).
+* For an excellent Python + SuperCollider live coding environment, check out [FoxDot](https://foxdot.org)
