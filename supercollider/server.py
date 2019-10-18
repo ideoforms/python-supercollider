@@ -1,13 +1,11 @@
 import liblo
+import random
 import logging
 import threading
 from . import globals
 from .exceptions import SuperColliderConnectionError
 
 logger = logging.getLogger(__name__)
-
-OSC_CLIENT_PORT = 57150
-
 
 class Server(object):
     def __init__(self, hostname="127.0.0.1", port=57110):
@@ -24,7 +22,7 @@ class Server(object):
         #-----------------------------------------------------------------------
         # Set up OSC server and default handlers for receiving messages.
         #-----------------------------------------------------------------------
-        self.osc_server = liblo.Server(OSC_CLIENT_PORT)
+        self.osc_server = liblo.Server(random.randint(57200, 57900))
         self.osc_server.add_method(None, None, self._osc_handler)
         self.osc_server_thread = threading.Thread(target=self._osc_server_read)
         self.osc_server_thread.setDaemon(True)
@@ -50,8 +48,9 @@ class Server(object):
             raise e
 
     def __del__(self):
-        self.osc_server.free()
-        self.osc_server = None
+        if  self.osc_server:
+            self.osc_server.free()
+            self.osc_server = None
         self.osc_server_thread.join()
 
     def sync(self):
@@ -188,6 +187,5 @@ class Server(object):
             pass
 
     def _osc_server_read(self):
-        while True:
-            if self.osc_server is not None:
-                self.osc_server.recv(10)
+        while self.osc_server is not None:
+            self.osc_server.recv(10)
