@@ -1,10 +1,6 @@
 from . import globals
 
 
-class AllocatorException (Exception):
-    pass
-
-
 class Allocator (object):
     def __init__(self, resource_name="generic"):
         self.index = globals.ALLOCATOR_BUS_START_INDEX
@@ -17,7 +13,7 @@ class Allocator (object):
             self.index += channels
             return rv
         else:
-            raise AllocatorException("No more %s resources available" % self.resource_name)
+            raise SuperColliderAllocatorException("No more %s resources available" % self.resource_name)
 
     def free(self, index):
         # TODO: Implement me
