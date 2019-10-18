@@ -35,7 +35,7 @@ class Server(object):
             "/done": {},
             "/status.reply": None,
             "/version.reply": None,
-            "/sync": None
+            "/synced": None
         }
 
         #-----------------------------------------------------------------------
@@ -53,7 +53,7 @@ class Server(object):
         and responding.
         """
         self._send_msg("/sync")
-        return self._await_response("/sync", None, lambda n: True)
+        return self._await_response("/synced", None, lambda n: True)
 
     def get_status(self, callback=None, blocking=True):
         """
@@ -166,7 +166,7 @@ class Server(object):
             buffer_id, *values = tuple(args)
             if (buffer_id,) in self.handlers["/b_info"]:
                 self.handlers["/b_info"][(buffer_id,)](values)
-        elif address == "/status.reply" or address == "/version.reply":
+        elif address == "/status.reply" or address == "/version.reply" or address == "/synced":
             if self.handlers[address]:
                 self.handlers[address](args)
         elif address == "/fail":
