@@ -42,7 +42,17 @@ class Server(object):
         # Necessary when querying a node ID for add actions.
         #-----------------------------------------------------------------------
         self.id = 0
-        self.sync()
+        try:
+            self.sync()
+        except SuperColliderConnectionError as e:
+            self.osc_server.free()
+            self.osc_server = None
+            raise e
+
+    def __del__(self):
+        self.osc_server.free()
+        self.osc_server = None
+        self.osc_server_thread.join()
 
     def sync(self):
         """
@@ -179,4 +189,5 @@ class Server(object):
 
     def _osc_server_read(self):
         while True:
-            self.osc_server.recv(10)
+            if self.osc_server is not None:
+                self.osc_server.recv(10)
