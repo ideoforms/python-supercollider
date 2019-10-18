@@ -42,6 +42,10 @@ synth.set("freq", 880.0)
 
 For further examples, see [examples](examples).
 
+## License
+
+This library is made available under the terms of the MIT license.
+
 ## See also
 
 * If you want a more comprehensive framework that lets you construct and compile SynthDefs from Python, take a look at [Supriya](https://github.com/josiah-wolf-oberholtzer/supriya).
