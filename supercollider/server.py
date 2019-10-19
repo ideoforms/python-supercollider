@@ -33,7 +33,8 @@ class Server(object):
             "/done": {},
             "/status.reply": None,
             "/version.reply": None,
-            "/synced": None
+            "/synced": None,
+            "/g_queryTree.reply": None
         }
 
         #-----------------------------------------------------------------------
@@ -62,7 +63,11 @@ class Server(object):
         and responding.
         """
         self._send_msg("/sync")
-        return self._await_response("/synced", None, lambda n: True)
+        return self._await_response("/synced", None, lambda n: n)
+    
+    def query_tree(self, group=None):
+        self._send_msg("/g_queryTree", group.id if group else 0, 0)
+        return self._await_response("/g_queryTree.reply")
 
     def get_status(self, callback=None, blocking=True):
         """
@@ -140,17 +145,17 @@ class Server(object):
     def _send_msg(self, msg, *args):
         liblo.send(self.client_address, msg, *args)
 
-    def _await_response(self, address, match_args, callback=lambda rv=None: rv):
+    def _await_response(self, address, match_args=(), callback=lambda rv=None: rv):
         event = threading.Event()
         rv = None
 
-        def unblocking_callback(*args):
+        def callback_with_timeout(*args):
             event.set()
             if callback:
                 nonlocal rv
                 rv = callback(*args)
 
-        self._add_handler(address, match_args, unblocking_callback)
+        self._add_handler(address, match_args, callback_with_timeout)
         responded_before_timeout = event.wait(globals.RESPONSE_TIMEOUT)
         if not responded_before_timeout:
             raise SuperColliderConnectionError("Connection to SuperCollider server timed out. Is scsynth running?")
@@ -175,14 +180,13 @@ class Server(object):
             buffer_id, *values = tuple(args)
             if (buffer_id,) in self.handlers["/b_info"]:
                 self.handlers["/b_info"][(buffer_id,)](values)
-        elif address == "/status.reply" or address == "/version.reply" or address == "/synced":
-            if self.handlers[address]:
-                self.handlers[address](args)
-        elif address == "/fail":
-            logger.warning("Received failure: %s" % args)
         elif address == "/done":
             if tuple(args) in self.handlers["/done"]:
                 self.handlers["/done"][tuple(args)]()
+        elif address in self.handlers and self.handlers[address]:
+            self.handlers[address](args)
+        elif address == "/fail":
+            logger.warning("Received failure: %s" % args)
         else:
             pass
 
