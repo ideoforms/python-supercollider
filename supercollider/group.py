@@ -21,5 +21,9 @@ class Group(object):
     def free(self):
         """
         Free the group and all Synths within it.
+        /g_deepFree does not free the group itself; must also call
+        /n_free.
         """
-        self.server._send_msg("/g_freeAll", self.id)
+        self.server._send_msg("/g_deepFree", self.id)
+        self.server._send_msg("/n_free", self.id)
+
