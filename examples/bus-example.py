@@ -28,7 +28,7 @@ import time
 server = Server()
 
 #-------------------------------------------------------------------------------
-# Create a Buffer, read and play a sample.
+# Create an audio bus to route audio between two synths.
 #-------------------------------------------------------------------------------
 bus = AudioBus(server, 2)
 synth = Synth(server, 'dust', { "out": bus })
