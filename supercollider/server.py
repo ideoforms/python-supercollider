@@ -30,6 +30,7 @@ class Server(object):
         self.handlers = {
             "/n_set": {},
             "/b_info": {},
+            "/b_setn" : {},
             "/done": {},
             "/status.reply": None,
             "/version.reply": None,
@@ -171,7 +172,7 @@ class Server(object):
             self.handlers[address] = callback
 
     def _osc_handler(self, address, args):
-        logger.debug("Received OSC: %s, %s" % (address, args))
+        print("Received OSC: %s, %s" % (address, args))
         if address == "/n_set":
             node_id, parameter, value = tuple(args)
             if (node_id, parameter) in self.handlers["/n_set"]:
@@ -180,6 +181,10 @@ class Server(object):
             buffer_id, *values = tuple(args)
             if (buffer_id,) in self.handlers["/b_info"]:
                 self.handlers["/b_info"][(buffer_id,)](values)
+        elif address == "/b_setn":
+            buffer_id, start_frame, stop_frame, *values = tuple(args)
+            if (buffer_id,) in self.handlers["/b_setn"]:
+                self.handlers["/b_setn"][(buffer_id,)](values)
         elif address == "/done":
             if tuple(args) in self.handlers["/done"]:
                 self.handlers["/done"][tuple(args)]()

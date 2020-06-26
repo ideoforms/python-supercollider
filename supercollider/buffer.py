@@ -102,12 +102,28 @@ class Buffer(object):
         if blocking:
             self.server._await_response("/done", ["/b_write", self.id])
 
+
+    def get(self, start_index=0, count=1024):
+        """
+        Get the Buffer's contents.
+        Note that, as per the SC
+         Command Reference, this is not designed to query
+        a lot of samples.
+        https://doc.sccode.org/Reference/Server-Command-Reference.html
+
+        Args:
+            start_index (int): Index of first frame in the Buffer to read from.
+            count (int): Number of samples to retrieve.
+        """
+        self.server._send_msg("/b_getn", self.id, start_index, count)
+        return self.server._await_response("/b_setn", [self.id])
+
     def set(self, samples, start_index=0):
         """
         Set the Buffer's contents to the values given in the supplied float array.
 
         Args:
-            samples (:obj:`list` of :obj:`float`): Array of floats to write to the Buffer.
+            samples (List[float]): Array of floats to write to the Buffer.
             start_index (int): Index of first frame in the Buffer to write to.
         """
         self.server._send_msg("/b_setn", self.id, start_index, len(samples), *samples)
