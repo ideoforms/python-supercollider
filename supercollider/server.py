@@ -172,7 +172,7 @@ class Server(object):
             self.handlers[address] = callback
 
     def _osc_handler(self, address, args):
-        print("Received OSC: %s, %s" % (address, args))
+        logger.debug("Received OSC: %s, %s" % (address, args))
         if address == "/n_set":
             node_id, parameter, value = tuple(args)
             if (node_id, parameter) in self.handlers["/n_set"]:

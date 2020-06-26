@@ -64,7 +64,6 @@ class Synth(object):
 
         if blocking:
             rv = self.server._await_response("/n_set", [self.id, parameter])
-            print("received %s" % rv)
             return rv
         else:
             self.server._add_handler("/n_set", [self.id, parameter], callback)
