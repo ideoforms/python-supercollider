@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.0.5](https://github.com/ideoforms/python-supercollider/releases/tag/v0.0.5) (2020-06-26)
+
+- Implement `Buffer.get`, to query samples from a Buffer
+
 ## [v0.0.4](https://github.com/ideoforms/python-supercollider/releases/tag/v0.0.4) (2019-10-15)
 
 - Fixed Linux dependencies (thanks to Dan Stowell)
