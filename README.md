@@ -40,7 +40,7 @@ synth = Synth(server, "sine", { "freq" : 440.0, "gain" : -12.0 })
 synth.set("freq", 880.0)
 ```
 
-For further examples, see [examples](examples).
+For further examples, see [examples](https://github.com/ideoforms/python-supercollider/tree/master/examples).
 
 ## License
 
