@@ -1,13 +1,11 @@
 import random
-import pythonosc
-from pythonosc.osc_server import AsyncIOOSCUDPServer, ThreadingOSCUDPServer, BlockingOSCUDPServer
+from pythonosc.osc_server import ThreadingOSCUDPServer
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
 import logging
 from threading import Thread, Event
 #from . import globals
 #from .exceptions import SuperColliderConnectionError
-import asyncio
 import socket 
 
 logger = logging.getLogger(__name__)
@@ -65,11 +63,23 @@ class Server(object):
 
         self.sync()
 
+
     def sync(self, num = 1):
         self._send_msg("/sync", num)
         #self.sc_client.send_message("/sync", num)
         self._await_response("/synced", None)
 
+    def query_tree(self, group=None):
+        self._send_msg("/g_queryTree", group.id if group else 0, 0)
+        self._await_response("/g_queryTree.reply")
+    
+    def get_status(self):
+        self._send_msg("/status")
+        self._await_response("/status.reply")
+
+    def get_version(self):
+        self._send_msg("/version")
+        self._await_response("/version.reply")
 
     def dummy_handler(self, address, *args):
         print(f"Dummy Handler - {address}: {args}")
@@ -92,6 +102,6 @@ class Server(object):
         self.dispatcher.unmap(address, self.callback_with_timeout)
 
     def _osc_server_listen(self):
-        print(f'Python OSC Serving @ {self.osc_server_address}')
+        logger.debug(f'Python OSC Serving @ {self.osc_server_address}')
         self.osc_server.serve_forever()
-        print(f'OSC Server @ {self.osc_server_address} Stopped!')
+        logger.warning(f'OSC Server @ {self.osc_server_address} Stopped!')
