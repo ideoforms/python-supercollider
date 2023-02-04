@@ -7,10 +7,11 @@ This project is forked from [ideoforms/python-supercollider](https://github.com/
 
 ### Motivation
 This fork uses different dependencies. Specifically, it uses [python-osc](https://pypi.org/project/python-osc/) for OSC communication, instead of `pyliblo` (and `liblo` in general). There are a few reasons for this switch:
-    + latest release of `pyliblo` was in 2015
-    + `pyliblo3` is not frequently mantained
-    + `liblo` sometimes is problematic to install, requiring compilation from source.
-    + `python-osc` doesn't need external dependencies, there is frequent maintenance, and 20+ contributors
+    
+    - latest release of `pyliblo` was in 2015
+    - `pyliblo3` is not frequently mantained
+    - `liblo` sometimes is problematic to install, requiring compilation from source.
+    - `python-osc` doesn't need external dependencies, there is frequent maintenance, and 20+ contributors
 
 ## Installation
 
