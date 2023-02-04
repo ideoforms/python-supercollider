@@ -1,15 +1,17 @@
-# Python client for SuperCollider
+# Simple Python client for SuperCollider using python-osc
 
 A lightweight Python module to control the [SuperCollider](https://supercollider.github.io) audio synthesis engine.
+This project is forked from [ideoforms/python-supercollider](https://github.com/ideoforms/python-supercollider), hoping to continue and improve ideoform's work. 
+
+### Motivation
+This fork uses different dependencies. Specifically, it uses [python-osc](https://pypi.org/project/python-osc/) for OSC communication, instead of `pyliblo` (and `liblo` in general). There are a few reasons for this switch:
+    + latest release of `pyliblo` was in 2015
+    + `pyliblo3` is not frequently mantained
+    + `liblo` sometimes is problematic to install, requiring compilation from source.
+    + `python-osc` doesn't need external dependencies, there is frequent maintenance, and 20+ contributors
 
 ## Installation
 
-The `liblo` library is required for the underlying OSC communications.
-
-```
-brew install liblo               # macOS
-apt-get install liblo7 liblo-dev # Linux
-```
 
 Install the Python package:
 
