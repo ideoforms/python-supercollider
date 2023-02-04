@@ -1,5 +1,7 @@
 # Simple Python client for SuperCollider using python-osc
 
+# Current status: `python-osc` version still not working
+
 A lightweight Python module to control the [SuperCollider](https://supercollider.github.io) audio synthesis engine.
 This project is forked from [ideoforms/python-supercollider](https://github.com/ideoforms/python-supercollider), hoping to continue and improve ideoform's work. 
 
