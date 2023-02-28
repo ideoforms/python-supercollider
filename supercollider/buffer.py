@@ -78,7 +78,7 @@ class Buffer(object):
         buf.server._send_msg("/b_allocRead", buf.id, path, start_frame, num_frames)
 
         if blocking:
-            buf.server._await_response("/done", ["/b_allocRead", buf.id])
+            buf.server._await_response("/done", ["/b_allocRead", buf.id], buf.server.simple_handler)
 
         return buf
 
@@ -116,7 +116,7 @@ class Buffer(object):
             count (int): Number of samples to retrieve.
         """
         self.server._send_msg("/b_getn", self.id, start_index, count)
-        return self.server._await_response("/b_setn", [self.id])
+        return self.server._await_response("/b_setn", [self.id], self.server.buf_handler)
 
     def set(self, samples, start_index=0):
         """
@@ -159,8 +159,8 @@ class Buffer(object):
                 "num_channels": args[1],
                 "sample_rate": args[2]
             }
-            if callback:
-                callback(rv)
+            #if callback:
+            #    callback(rv)
             return rv
 
         self.server._send_msg("/b_query", self.id)
