@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name = 'supercollider',
-    version = '0.0.5',
+    version = '0.0.6',
     description = 'Interact with the SuperCollider audio synthesis engine',
     long_description = open("README.md", "r").read(),
     long_description_content_type = "text/markdown",
@@ -12,7 +12,7 @@ setup(
     author_email = 'dan-code@erase.net',
     url = 'https://github.com/ideoforms/supercollider',
     packages = ['supercollider'],
-    install_requires = ['cython', 'pyliblo >= 0.9.1'],
+    install_requires = ['python-osc'],
     keywords = ('sound', 'music', 'supercollider', 'synthesis'),
     classifiers = [
         'Topic :: Multimedia :: Sound/Audio',
