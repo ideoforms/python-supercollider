@@ -159,8 +159,7 @@ class Buffer(object):
                 "num_channels": args[1],
                 "sample_rate": args[2]
             }
-            #if callback:
-            #    callback(rv)
+
             return rv
 
         self.server._send_msg("/b_query", self.id)

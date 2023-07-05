@@ -65,7 +65,6 @@ class Server(object):
         return args[2]
 
     def buf_handler(self, address, *args):
-        #print(f"Buffer Handler - {address}: {args}")
         return args[3:]
 
     def status_handler(self, address, *args):
@@ -96,9 +95,8 @@ class Server(object):
     def _send_msg(self, address, *args):
         self.sc_client.send_message(address, [*args])
 
-    def sync(self, num = 1):
-        self._send_msg("/sync", num)
-        #self.sc_client.send_message("/sync", num)
+    def sync(self, ping_id = 1):
+        self._send_msg("/sync", ping_id)
         return self._await_response("/synced", None, self.simple_handler)
 
     def query_tree(self, group=None):
@@ -123,7 +121,6 @@ class Server(object):
         # It also overwrites the callback (dispatcher) function to capture the return value.
         # This is necessary because the dispatcher handler can't return anything.
         # Make sure to unmap the callback before it is overwritten to avoid duplicate callbacks.
-        # TODO: Find a better way to do this
         def _callback_with_timeout(*args):
             self.event.set()
             if callback:
@@ -132,7 +129,7 @@ class Server(object):
 
         self.dispatcher.map(address, _callback_with_timeout)
 
-        responded_before_timeout = self.event.wait(0.25)
+        responded_before_timeout = self.event.wait(globals.RESPONSE_TIMEOUT)
         if not responded_before_timeout:
             raise SuperColliderConnectionError("Connection to SuperCollider server timed out. Is scsynth running?")
         elif responded_before_timeout:
