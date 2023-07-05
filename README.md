@@ -4,17 +4,8 @@ A lightweight Python module to control the [SuperCollider](https://supercollider
 
 ## Installation
 
-##### v0.0.6 and higher
-The `python-osc` package has replaced `pyliblo` for OSC communications. Hence, `liblo` is no longer required.
-
-
-##### v0.0.5 and lower
-The `liblo` library is required for the underlying OSC communications.
-
-```
-brew install liblo               # macOS
-apt-get install liblo7 liblo-dev # Linux
-```
+##### Note
+As of v0.0.6 and higher, the package dependency `pyliblo` was replaced  by `python-osc` for OSC communications. Hence, `liblo` is no longer required.
 
 #### Install the Python package:
 
