@@ -111,7 +111,7 @@ class Server(object):
     def get_version(self):
         self._send_msg("/version")
 
-        return self._await_response("/version.reply", None, version_handler)
+        return self._await_response("/version.reply", None, self.version_handler)
 
     # ------------------- Callback Timeout Logic ------------------- #
     def _await_response(self, address, match_args=(), callback=None):
