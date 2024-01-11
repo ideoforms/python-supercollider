@@ -19,7 +19,7 @@ class Server(object):
         Supercollider communication is (unfortunatelly for UDP) made in the same
         port used by the client. Hence, the OSC server and the UDP client should
         share the same port. Setting this up is possible, but slightly harder.
-        Check this github issue to see how this is possible with pythonosc:
+        Check this github issue to see how this is possible with python-osc:
         https://github.com/attwad/python-osc/issues/41
 
         Args:
@@ -166,3 +166,13 @@ class Server(object):
         logger.debug(f'Python OSC Serving @ {self.osc_server_address}')
         self.osc_server.serve_forever()
         logger.warning(f'OSC Server @ {self.osc_server_address} Stopped!')
+
+
+    def clear_all_handlers(address):
+        """ Useful for cleaning up after using handlers with blocking=False.
+
+        """
+        for addr, handlers in self.dispatcher._map.items():
+            for handler in handlers.copy():
+                self.dispatcher.unmap(address, handler)
+

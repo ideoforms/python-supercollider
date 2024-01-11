@@ -172,4 +172,4 @@ class Buffer(object):
         if blocking:
             return self.server._await_response("/b_info", [self.id], _handler)
         else:
-            self.server._add_handler("/b_info", [self.id], _handler)
+            self.server.dispatcher.map("/b_info", _handler)
