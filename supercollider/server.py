@@ -42,9 +42,6 @@ class Server(object):
         self.osc_server_thread = Thread(target=self._osc_server_listen, daemon=True)
         self.osc_server_thread.start()
 
-        # Callbacks witout await_response timeout
-        # self.dispatcher.map("/example", self.dummy_handler)
-
         # For callback timeouts
         self.event = Event()
         
@@ -104,11 +101,44 @@ class Server(object):
         return self._await_response("/g_queryTree.reply", callback=self.simple_handler)
     
     def get_status(self):
+        """
+        Query the current Server status, including the number of active units, CPU
+        load, etc.
+
+        Example:
+            >>> server.status
+            {
+                'num_ugens': 5,
+                'num_synths': 1,
+                'num_groups': 2,
+                'num_synthdefs': 107,
+                'cpu_average': 0.08170516043901443,
+                'cpu_peak': 0.34912213683128357,
+                'sample_rate_nominal': 44100.0,
+                'sample_rate_actual': 44100.07866992249
+            }
+        """
+
         self._send_msg("/status")
 
         return self._await_response("/status.reply", None, self.status_handler)
 
     def get_version(self):
+        """
+        Returns the current Server version.
+
+        Example:
+            >>> server.version
+            {
+                'program_name': "scsynth",
+                'version_major': 3,
+                'version_minor': 10,
+                'version_patch': ".3",
+                'git_branch': "HEAD",
+                'commit_hash': "67a1eb18"
+            }
+        """
+
         self._send_msg("/version")
 
         return self._await_response("/version.reply", None, self.version_handler)
