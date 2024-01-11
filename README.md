@@ -5,7 +5,9 @@ A lightweight Python module to control the [SuperCollider](https://supercollider
 ## Installation
 
 ##### Dependencies
-`python-osc`
+```python
+pip3 install python-osc
+```
 
 #### Install the Python package:
 
