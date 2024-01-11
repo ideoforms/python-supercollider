@@ -50,55 +50,23 @@ class Server(object):
 
         self.sync()
 
-    # ------------------- Handlers ------------------- #
-    # TODO: Move handlers to a separate file or class
-    def dummy_handler(self, address, *args):
-        pass
-
-    def simple_handler(self, address, *args):
-        return args
-
-    def param_handler(self, address, *args):
-        return args[2]
-
-    def buf_handler(self, address, *args):
-        return args[3:]
-
-    def status_handler(self, address, *args):
-        status_dict = {
-                "num_ugens": args[1],
-                "num_synths": args[2],
-                "num_groups": args[3],
-                "num_synthdefs": args[4],
-                "cpu_average": args[5],
-                "cpu_peak": args[6],
-                "sample_rate_nominal": args[7],
-                "sample_rate_actual": args[8]}
-            
-        return status_dict
-
-    def version_handler(self, *args):
-        version_dict = {
-                "program_name": args[1],
-                "version_major": args[2],
-                "version_minor": args[3],
-                "version_patch": args[4],
-                "git_branch": args[5],
-                "commit_hash": args[6]}
-            
-        return version_dict
-    
     # ------------------- Client Messages ------------------- #
     def _send_msg(self, address, *args):
         self.sc_client.send_message(address, [*args])
 
     def sync(self, ping_id = 1):
+        def _handler(address, *args):
+            return args
+
         self._send_msg("/sync", ping_id)
-        return self._await_response("/synced", None, self.simple_handler)
+        return self._await_response("/synced", None, _handler)
 
     def query_tree(self, group=None):
+        def _handler(address, *args):
+            return args
+
         self._send_msg("/g_queryTree", group.id if group else 0, 0)
-        return self._await_response("/g_queryTree.reply", callback=self.simple_handler)
+        return self._await_response("/g_queryTree.reply", callback=_handler)
     
     def get_status(self):
         """
@@ -119,9 +87,22 @@ class Server(object):
             }
         """
 
+        def _handler(address, *args):
+            status_dict = {
+                    "num_ugens": args[1],
+                    "num_synths": args[2],
+                    "num_groups": args[3],
+                    "num_synthdefs": args[4],
+                    "cpu_average": args[5],
+                    "cpu_peak": args[6],
+                    "sample_rate_nominal": args[7],
+                    "sample_rate_actual": args[8]}
+                
+            return status_dict
+
         self._send_msg("/status")
 
-        return self._await_response("/status.reply", None, self.status_handler)
+        return self._await_response("/status.reply", None, _handler)
 
     def get_version(self):
         """
@@ -139,9 +120,20 @@ class Server(object):
             }
         """
 
+        def _handler(*args):
+            version_dict = {
+                    "program_name": args[1],
+                    "version_major": args[2],
+                    "version_minor": args[3],
+                    "version_patch": args[4],
+                    "git_branch": args[5],
+                    "commit_hash": args[6]}
+                
+            return version_dict
+    
         self._send_msg("/version")
 
-        return self._await_response("/version.reply", None, self.version_handler)
+        return self._await_response("/version.reply", None, _handler)
 
     # ------------------- Callback Timeout Logic ------------------- #
     def _await_response(self, address, match_args=(), callback=None):

@@ -77,8 +77,11 @@ class Buffer(object):
         buf = Buffer(server, id=None)
         buf.server._send_msg("/b_allocRead", buf.id, path, start_frame, num_frames)
 
+        def _handler(address, *args):
+            return args
+        
         if blocking:
-            buf.server._await_response("/done", ["/b_allocRead", buf.id], buf.server.simple_handler)
+            buf.server._await_response("/done", ["/b_allocRead", buf.id], _handler)
 
         return buf
 
@@ -115,8 +118,11 @@ class Buffer(object):
             start_index (int): Index of first frame in the Buffer to read from.
             count (int): Number of samples to retrieve.
         """
+        def _handler(address, *args):
+            return args[3:]
+
         self.server._send_msg("/b_getn", self.id, start_index, count)
-        return self.server._await_response("/b_setn", [self.id], self.server.buf_handler)
+        return self.server._await_response("/b_setn", [self.id], _handler)
 
     def set(self, samples, start_index=0):
         """
