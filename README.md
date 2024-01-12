@@ -39,6 +39,10 @@ For further examples, see [examples](https://github.com/ideoforms/python-superco
 
 This library is made available under the terms of the MIT license.
 
+## Contributors
+
+ - Thanks to [Itaborala](https://github.com/Itaborala) for porting from liblo to python-osc
+
 ## See also
 
 * If you want a more comprehensive framework that lets you construct and compile SynthDefs from Python, take a look at [Supriya](https://github.com/josiah-wolf-oberholtzer/supriya).
