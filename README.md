@@ -4,12 +4,7 @@ A lightweight Python module to control the [SuperCollider](https://supercollider
 
 ## Installation
 
-##### Dependencies
-```python
-pip3 install python-osc
-```
-
-#### Install the Python package:
+To install the client library:
 
 ```python
 pip3 install supercollider
