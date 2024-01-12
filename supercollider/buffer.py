@@ -1,12 +1,17 @@
+from __future__ import annotations
 from . import globals
 from .globals import SAMPLE_FORMAT_FLOAT
 from .globals import HEADER_FORMAT_WAV
+from typing import TYPE_CHECKING, Callable
 import os
 
-class Buffer(object):
-    """ Encapsulates a SuperCollider Buffer object.
-    """
-    def __init__(self, server, id=0):
+if TYPE_CHECKING:
+    from .server import Server
+
+class Buffer:
+    def __init__(self,
+                 server: Server,
+                 id: int = 0):
         """
         Creates a Buffer object, but does not allocate any memory for it. This constructor should only be used if
         you want to create an object to interface with an already-created buffer.
@@ -28,7 +33,7 @@ class Buffer(object):
             self.id = id
 
     @classmethod
-    def alloc(cls, server, num_frames, num_channels=1, blocking=True):
+    def alloc(cls, server: Server, num_frames: int, num_channels: int = 1, blocking: bool = True):
         """
         Create and allocate a new Buffer.
 
@@ -52,7 +57,12 @@ class Buffer(object):
         return buf
 
     @classmethod
-    def read(cls, server, path, start_frame=0, num_frames=0, blocking=True):
+    def read(cls,
+             server: Server,
+             path: str,
+             start_frame: int = 0,
+             num_frames: int = 0,
+             blocking: bool = True) -> Buffer:
         """
         Create a new Buffer and read its contents from disk.
 
@@ -79,14 +89,20 @@ class Buffer(object):
 
         def _handler(address, *args):
             return args
-        
+
         if blocking:
             buf.server._await_response("/done", ["/b_allocRead", buf.id], _handler)
 
         return buf
 
-    def write(self, path, header_format=HEADER_FORMAT_WAV, sample_format=SAMPLE_FORMAT_FLOAT,
-              num_frames=-1, start_frame=0, leave_open=False, blocking=True):
+    def write(self,
+              path: str,
+              header_format: int = HEADER_FORMAT_WAV,
+              sample_format: int = SAMPLE_FORMAT_FLOAT,
+              num_frames: int = -1,
+              start_frame: int = 0,
+              leave_open: bool = False,
+              blocking: bool = True):
         """
         Write the Buffer's contents to an audio file.
 
@@ -105,26 +121,27 @@ class Buffer(object):
         if blocking:
             self.server._await_response("/done", ["/b_write", self.id])
 
-
-    def get(self, start_index=0, count=1024):
+    def get(self, start_index: int = 0, count: int = 1024) -> list[float]:
         """
-        Get the Buffer's contents.
-        Note that, as per the SC
-         Command Reference, this is not designed to query
+        Query the Buffer's contents.
+
+        Note that, as per the SuperCollider Command Reference, this is not designed to query
         a lot of samples.
+
         https://doc.sccode.org/Reference/Server-Command-Reference.html
 
         Args:
             start_index (int): Index of first frame in the Buffer to read from.
             count (int): Number of samples to retrieve.
         """
+
         def _handler(address, *args):
             return args[3:]
 
         self.server._send_msg("/b_getn", self.id, start_index, count)
         return self.server._await_response("/b_setn", [self.id], _handler)
 
-    def set(self, samples, start_index=0):
+    def set(self, samples: list[float], start_index: int = 0):
         """
         Set the Buffer's contents to the values given in the supplied float array.
 
@@ -134,7 +151,7 @@ class Buffer(object):
         """
         self.server._send_msg("/b_setn", self.id, start_index, len(samples), *samples)
 
-    def fill(self, count, value, start_index=0):
+    def fill(self, count: int, value: float, start_index: int = 0):
         """
         Fill the Buffer's contents with a specified sample.
 
@@ -151,7 +168,7 @@ class Buffer(object):
         """
         self.server._send_msg("/b_free", self.id)
 
-    def get_info(self, callback=None, blocking=True):
+    def get_info(self, callback: Callable = None, blocking: bool = True):
         """
         Returns info about the Buffer.
 
@@ -159,6 +176,7 @@ class Buffer(object):
             >>> buffer.info
             {'num_frames': 1024, 'num_channels': 1, 'sample_rate': 44100.0}
         """
+
         def _handler(args):
             rv = {
                 "num_frames": args[0],

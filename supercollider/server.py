@@ -1,17 +1,17 @@
-import random
 from pythonosc.osc_server import ThreadingOSCUDPServer
 from pythonosc.udp_client import SimpleUDPClient
 from pythonosc.dispatcher import Dispatcher
-import logging
 from threading import Thread, Event
-from . import globals
 from .exceptions import SuperColliderConnectionError
-import socket 
+from typing import Optional, Callable
+from . import globals
+import logging
+import socket
 
 logger = logging.getLogger(__name__)
 
-class Server(object):
-    def __init__(self, hostname="127.0.0.1", port=57110):
+class Server:
+    def __init__(self, hostname: str = "127.0.0.1", port: int = 57110):
         """
         Create a new Server object, which is a local representation of a remote
         SuperCollider server.
@@ -31,7 +31,7 @@ class Server(object):
         self.client_address = (hostname, port)
         self.sc_client = SimpleUDPClient(hostname, port)
         self.sc_client._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.sc_client._sock.bind(('',0))
+        self.sc_client._sock.bind(('', 0))
 
         # OSC Server for receiving messages.
         self.dispatcher = Dispatcher()
@@ -44,17 +44,20 @@ class Server(object):
 
         # For callback timeouts
         self.event = Event()
-        
+
         # SC node ID for Add actions
         self.id = 0
 
         self.sync()
 
-    # ------------------- Client Messages ------------------- #
-    def _send_msg(self, address, *args):
+    #--------------------------------------------------------------------------------
+    # Client messages
+    #--------------------------------------------------------------------------------
+
+    def _send_msg(self, address: str, *args) -> None:
         self.sc_client.send_message(address, [*args])
 
-    def sync(self, ping_id = 1):
+    def sync(self, ping_id: int = 1):
         def _handler(address, *args):
             return args
 
@@ -67,7 +70,7 @@ class Server(object):
 
         self._send_msg("/g_queryTree", group.id if group else 0, 0)
         return self._await_response("/g_queryTree.reply", callback=_handler)
-    
+
     def get_status(self):
         """
         Query the current Server status, including the number of active units, CPU
@@ -89,22 +92,22 @@ class Server(object):
 
         def _handler(address, *args):
             status_dict = {
-                    "num_ugens": args[1],
-                    "num_synths": args[2],
-                    "num_groups": args[3],
-                    "num_synthdefs": args[4],
-                    "cpu_average": args[5],
-                    "cpu_peak": args[6],
-                    "sample_rate_nominal": args[7],
-                    "sample_rate_actual": args[8]}
-                
+                "num_ugens": args[1],
+                "num_synths": args[2],
+                "num_groups": args[3],
+                "num_synthdefs": args[4],
+                "cpu_average": args[5],
+                "cpu_peak": args[6],
+                "sample_rate_nominal": args[7],
+                "sample_rate_actual": args[8]}
+
             return status_dict
 
         self._send_msg("/status")
 
         return self._await_response("/status.reply", None, _handler)
 
-    def get_version(self):
+    def get_version(self) -> dict:
         """
         Returns the current Server version.
 
@@ -122,23 +125,29 @@ class Server(object):
 
         def _handler(*args):
             version_dict = {
-                    "program_name": args[1],
-                    "version_major": args[2],
-                    "version_minor": args[3],
-                    "version_patch": args[4],
-                    "git_branch": args[5],
-                    "commit_hash": args[6]}
-                
+                "program_name": args[1],
+                "version_major": args[2],
+                "version_minor": args[3],
+                "version_patch": args[4],
+                "git_branch": args[5],
+                "commit_hash": args[6]}
+
             return version_dict
-    
+
         self._send_msg("/version")
 
         return self._await_response("/version.reply", None, _handler)
 
-    # ------------------- Callback Timeout Logic ------------------- #
-    def _await_response(self, address, match_args=(), callback=None):
+    #--------------------------------------------------------------------------------
+    # Callback timeout logic
+    #--------------------------------------------------------------------------------
 
+    def _await_response(self,
+                        address: str,
+                        match_args=(),
+                        callback: Optional[Callable] = None) -> list:
         rv = None
+
         # Sets the thread event when message is received
         # It also overwrites the callback (dispatcher) function to capture the return value.
         # This is necessary because the dispatcher handler can't return anything.
@@ -152,27 +161,28 @@ class Server(object):
         self.dispatcher.map(address, _callback_with_timeout)
 
         responded_before_timeout = self.event.wait(globals.RESPONSE_TIMEOUT)
-        if not responded_before_timeout:
-            raise SuperColliderConnectionError("Connection to SuperCollider server timed out. Is scsynth running?")
-        elif responded_before_timeout:
+        if responded_before_timeout:
             self.event.clear()
+        else:
+            raise SuperColliderConnectionError("Connection to SuperCollider server timed out. Is scsynth running?")
 
         self.dispatcher.unmap(address, _callback_with_timeout)
 
         return rv
 
-    # ------------------- OSC Server Thread ------------------- #
+    #--------------------------------------------------------------------------------
+    # OSC server thread
+    #--------------------------------------------------------------------------------
+
     def _osc_server_listen(self):
-        logger.debug(f'Python OSC Serving @ {self.osc_server_address}')
+        logger.debug(f'Listening for OSC messages on @ {self.osc_server_address}')
         self.osc_server.serve_forever()
-        logger.warning(f'OSC Server @ {self.osc_server_address} Stopped!')
+        logger.warning(f'OSC server @ {self.osc_server_address} stopped')
 
-
-    def clear_all_handlers(address):
-        """ Useful for cleaning up after using handlers with blocking=False.
-
+    def clear_all_handlers(self):
         """
-        for addr, handlers in self.dispatcher._map.items():
+        Useful for cleaning up after using handlers with blocking=False.
+        """
+        for address, handlers in self.dispatcher._map.items():
             for handler in handlers.copy():
                 self.dispatcher.unmap(address, handler)
-

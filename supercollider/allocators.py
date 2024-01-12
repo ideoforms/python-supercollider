@@ -1,7 +1,7 @@
 from . import globals
 from .exceptions import SuperColliderAllocationError
 
-class Allocator (object):
+class Allocator:
     def __init__(self, resource_name="generic"):
         self.index = globals.ALLOCATOR_BUS_START_INDEX
         self.resource_name = resource_name

@@ -1,9 +1,16 @@
-from . import globals
+from __future__ import annotations
 
-class Group(object):
-    """ Encapsulates a SuperCollider Group object.
-    """
-    def __init__(self, server, action=0, target=0):
+from . import globals
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .server import Server
+
+class Group:
+    def __init__(self,
+                 server: Server,
+                 action: int = 0,
+                 target: int = 0):
         """
         Create a new Group.
 
@@ -18,12 +25,10 @@ class Group(object):
 
         self.server._send_msg("/g_new", self.id, action, target)
 
-    def free(self):
+    def free(self) -> None:
         """
         Free the group and all Synths within it.
-        /g_deepFree does not free the group itself; must also call
-        /n_free.
         """
+        # /g_deepFree does not free the group itself; must also call /n_free.
         self.server._send_msg("/g_deepFree", self.id)
         self.server._send_msg("/n_free", self.id)
-
