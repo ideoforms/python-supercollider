@@ -31,8 +31,8 @@ server = Server()
 # Create an audio bus to route audio between two synths.
 #-------------------------------------------------------------------------------
 bus = AudioBus(server, 2)
-synth = Synth(server, 'dust', { "out": bus })
-reverb = Synth(server, 'reverb', { "in": bus, "out": 0 }, target=server, action=ADD_TO_TAIL)
+synth = Synth(server, 'dust', {"out": bus})
+reverb = Synth(server, 'reverb', {"in": bus, "out": 0}, target=server, action=ADD_TO_TAIL)
 
 try:
     while True:

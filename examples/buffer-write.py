@@ -22,6 +22,6 @@ server_status = server.get_status()
 sample_rate = server_status["sample_rate_nominal"]
 
 buf = Buffer.alloc(server, length)
-buf.set([ math.sin(n * math.pi * 2.0 * 440.0 / sample_rate) for n in range(int(length)) ])
+buf.set([math.sin(n * math.pi * 2.0 * 440.0 / sample_rate) for n in range(int(length))])
 buf.write(OUTPUT_FILE, HEADER_FORMAT_WAV)
 print("Written buffer to %s" % OUTPUT_FILE)

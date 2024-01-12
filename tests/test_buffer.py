@@ -44,7 +44,7 @@ def test_buffer_read(server):
 
     # Query buffer info - blocking approach
     rv = buf.get_info(blocking=True)
-    assert rv == {'num_frames': 1, 'num_channels': 100, 'sample_rate': 1}
+    assert rv == {'num_frames': 100, 'num_channels': 1, 'sample_rate': 44100}
 
     # Query buffer info - non-blocking approach
     event = Event()
@@ -55,4 +55,4 @@ def test_buffer_read(server):
         event.set()
     buf.get_info(callback=callback, blocking=False)
     event.wait(1.0)
-    assert rv == {'num_frames': 1, 'num_channels': 100, 'sample_rate': 1}
+    assert rv == {'num_frames': 100, 'num_channels': 1, 'sample_rate': 44100}

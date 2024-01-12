@@ -6,8 +6,8 @@ Example: Read and play an audio file.
 Before running this script, the SC server must be started, and the following
 SynthDef stored:
 
-SynthDef(\playbuf, { |out = 0, bufnum = 0, gain = 0.0|
-    var data = PlayBuf.ar(1, bufnum, loop: 1) * gain.dbamp;
+SynthDef(\playbuf, { |out = 0, bufnum = 0, gain = 0.0, rate=1.0|
+    var data = PlayBuf.ar(1, bufnum, rate: rate, loop: 1) * gain.dbamp;
     Out.ar(out, Pan2.ar(data));
 }).store;
 
@@ -39,8 +39,10 @@ print("Read buffer, sample rate %d, duration %.1fs" % (buf_info["sample_rate"], 
 server_status = server.get_status()
 server_sample_rate = server_status["sample_rate_nominal"]
 buffer_sample_rate = buf_info["sample_rate"]
-rate = buffer_sample_rate / server_sample_rate
-synth = Synth(server, 'playbuf', {"buffer": buf, "rate": rate})
+print("Server sample rate: %d" % server_sample_rate)
+print("Buffer sample rate: %d" % buffer_sample_rate)
+rate_scale = buffer_sample_rate / server_sample_rate
+synth = Synth(server, 'playbuf', {"buffer": buf, "rate": rate_scale})
 
 try:
     while True:

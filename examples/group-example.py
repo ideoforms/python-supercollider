@@ -9,7 +9,7 @@ Requires the \sine synth defined in hello-world.py.
 """
 
 fundamental_min = 220
-fundamental_max = 1760 
+fundamental_max = 1760
 partial_count = 5
 partial_attenuate = -6.0
 tone_duration = 0.1
@@ -22,12 +22,10 @@ import random
 def create_group(freq):
     group = Group(server)
     for n in range(1, partial_count + 1):
-        synth = Synth(server, "sine",
-            {
-                "freq": freq * n * random.uniform(0.99, 1.01),
-                "gain": partial_attenuate * n,
-            },
-        target=group)
+        Synth(server, "sine", {
+            "freq": freq * n * random.uniform(0.99, 1.01),
+            "gain": partial_attenuate * n
+        }, target=group)
     return group
 
 server = Server()

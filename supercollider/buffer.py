@@ -179,9 +179,9 @@ class Buffer:
 
         def _handler(address, *args):
             rv = {
-                "num_frames": args[0],
-                "num_channels": args[1],
-                "sample_rate": args[2]
+                "num_frames": args[1],
+                "num_channels": args[2],
+                "sample_rate": args[3]
             }
 
             return rv

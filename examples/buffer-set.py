@@ -30,10 +30,10 @@ server = Server()
 buf = Buffer.alloc(server, 1024)
 print("Created buffer: %s" % buf.get_info())
 
-synth = Synth(server, 'playbuf', { "buffer" : buf, "gain" : -18.0 })
+synth = Synth(server, 'playbuf', {"buffer": buf, "gain": -18.0})
 try:
     while True:
-        buf.set([ random.uniform(-1, 1) for n in range(buf.num_frames) ])
+        buf.set([random.uniform(-1, 1) for n in range(buf.num_frames)])
         time.sleep(0.1)
 except KeyboardInterrupt:
     synth.free()
