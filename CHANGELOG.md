@@ -1,8 +1,13 @@
 # Changelog
 
+## [v0.0.6](https://github.com/ideoforms/python-supercollider/releases/tag/v0.0.6) (2024-01-12)
+
+- Updated to use native `python-osc` for OSC communications, eliminating dependency on `liblo`
+- Added type hints (requires Python 3.9+)
+
 ## [v0.0.5](https://github.com/ideoforms/python-supercollider/releases/tag/v0.0.5) (2020-06-26)
 
-- Implement `Buffer.get`, to query samples from a Buffer
+- Implemented `Buffer.get`, to query samples from a Buffer
 
 ## [v0.0.4](https://github.com/ideoforms/python-supercollider/releases/tag/v0.0.4) (2019-10-15)
 
@@ -10,18 +15,18 @@
 
 ## [v0.0.3](https://github.com/ideoforms/python-supercollider/releases/tag/v0.0.3) (2019-10-09)
 
-- Add `AudioBus`/`ControlBus`
-- Add further examples: `buffer-read`, `buffer-set`, `buffer-write`, `bus-example`
+- Added `AudioBus`/`ControlBus`
+- Added further examples: `buffer-read`, `buffer-set`, `buffer-write`, `bus-example`
 
 ## [v0.0.2](https://github.com/ideoforms/python-supercollider/releases/tag/v0.0.2) (2019-10-07)
 
-- Add `Buffer`
-- Add `Group`
-- Add support for synchronous operations
+- Added `Buffer`
+- Added `Group`
+- Added support for synchronous operations
 
 ## [v0.0.1](https://github.com/ideoforms/python-supercollider/releases/tag/v0.0.1) (2019-10-05)
 
 Minimum viable release.
- - Add `Server`
- - Add `Synth`, with support for get/set/free
+ - Added `Server`
+ - Added `Synth`, with support for get/set/free
 
