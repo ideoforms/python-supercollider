@@ -79,7 +79,7 @@ class Synth:
             rv = self.server._await_response("/n_set", [self.id, parameter], _handler)
             return rv
         else:
-            self.server.dispatcher.map("/n_set", callback)
+            self.server.dispatcher.map("/n_set", lambda *args: callback(_handler(*args)))
 
     def free(self):
         """

@@ -40,7 +40,7 @@ server_status = server.get_status()
 server_sample_rate = server_status["sample_rate_nominal"]
 buffer_sample_rate = buf_info["sample_rate"]
 rate = buffer_sample_rate / server_sample_rate
-synth = Synth(server, 'playbuf', { "buffer" : buf, "rate": rate })
+synth = Synth(server, 'playbuf', {"buffer": buf, "rate": rate})
 
 try:
     while True:

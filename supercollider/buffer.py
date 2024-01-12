@@ -177,7 +177,7 @@ class Buffer:
             {'num_frames': 1024, 'num_channels': 1, 'sample_rate': 44100.0}
         """
 
-        def _handler(args):
+        def _handler(address, *args):
             rv = {
                 "num_frames": args[0],
                 "num_channels": args[1],
@@ -190,4 +190,4 @@ class Buffer:
         if blocking:
             return self.server._await_response("/b_info", [self.id], _handler)
         else:
-            self.server.dispatcher.map("/b_info", _handler)
+            self.server.dispatcher.map("/b_info", lambda *args: callback(_handler(*args)))

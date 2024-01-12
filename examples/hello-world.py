@@ -19,13 +19,16 @@ import time
 #-------------------------------------------------------------------------------
 server = Server()
 print("Created server")
-print("Server version: %s" % server.get_version())
+print("Server version:")
+version = server.get_version()
+for key, value in version.items():
+    print(f" - {key}: {value}")
 
 #-------------------------------------------------------------------------------
 # Create a Synth, set its parameter, query the parameter, and free it.
 #-------------------------------------------------------------------------------
 try:
-    synth = Synth(server, "sine", { "freq" : 440.0, "gain" : -18.0 })
+    synth = Synth(server, "sine", {"freq": 440.0, "gain": -18.0})
     print("Created synth")
     print("Frequency: %.1f" % synth.get("freq"))
     while True:
