@@ -8,3 +8,4 @@ sdist/
 *.pickle
 .idea
 .eggs
+test.scd

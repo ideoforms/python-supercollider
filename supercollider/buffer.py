@@ -77,8 +77,11 @@ class Buffer(object):
         buf = Buffer(server, id=None)
         buf.server._send_msg("/b_allocRead", buf.id, path, start_frame, num_frames)
 
+        def _handler(address, *args):
+            return args
+        
         if blocking:
-            buf.server._await_response("/done", ["/b_allocRead", buf.id])
+            buf.server._await_response("/done", ["/b_allocRead", buf.id], _handler)
 
         return buf
 
@@ -115,8 +118,11 @@ class Buffer(object):
             start_index (int): Index of first frame in the Buffer to read from.
             count (int): Number of samples to retrieve.
         """
+        def _handler(address, *args):
+            return args[3:]
+
         self.server._send_msg("/b_getn", self.id, start_index, count)
-        return self.server._await_response("/b_setn", [self.id])
+        return self.server._await_response("/b_setn", [self.id], _handler)
 
     def set(self, samples, start_index=0):
         """
@@ -159,12 +165,11 @@ class Buffer(object):
                 "num_channels": args[1],
                 "sample_rate": args[2]
             }
-            if callback:
-                callback(rv)
+
             return rv
 
         self.server._send_msg("/b_query", self.id)
         if blocking:
             return self.server._await_response("/b_info", [self.id], _handler)
         else:
-            self.server._add_handler("/b_info", [self.id], _handler)
+            self.server.dispatcher.map("/b_info", _handler)

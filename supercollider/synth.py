@@ -60,13 +60,16 @@ class Synth(object):
             440.0
         """
 
+        def _handler(address, *args):
+            return args[2]
+
         self.server._send_msg("/s_get", self.id, parameter)
 
         if blocking:
-            rv = self.server._await_response("/n_set", [self.id, parameter])
+            rv = self.server._await_response("/n_set", [self.id, parameter], _handler)
             return rv
         else:
-            self.server._add_handler("/n_set", [self.id, parameter], callback)
+            self.server.dispatcher.map("/n_set", callback)
 
     def free(self):
         """

@@ -1,9 +1,12 @@
-import liblo
 import random
+from pythonosc.osc_server import ThreadingOSCUDPServer
+from pythonosc.udp_client import SimpleUDPClient
+from pythonosc.dispatcher import Dispatcher
 import logging
-import threading
+from threading import Thread, Event
 from . import globals
 from .exceptions import SuperColliderConnectionError
+import socket 
 
 logger = logging.getLogger(__name__)
 
@@ -13,64 +16,59 @@ class Server(object):
         Create a new Server object, which is a local representation of a remote
         SuperCollider server.
 
+        Supercollider communication is (unfortunatelly for UDP) made in the same
+        port used by the client. Hence, the OSC server and the UDP client should
+        share the same port. Setting this up is possible, but slightly harder.
+        Check this github issue to see how this is possible with python-osc:
+        https://github.com/attwad/python-osc/issues/41
+
         Args:
             hostname (str): Hostname or IP address of the server
             port (int): Port of the server
         """
-        self.client_address = liblo.Address(hostname, port)
 
-        #-----------------------------------------------------------------------
-        # Set up OSC server and default handlers for receiving messages.
-        #-----------------------------------------------------------------------
-        self.osc_server = liblo.Server(random.randint(57200, 57900))
-        self.osc_server.add_method(None, None, self._osc_handler)
-        self.osc_server_thread = threading.Thread(target=self._osc_server_read)
-        self.osc_server_thread.setDaemon(True)
+        # UDP Client for sending messages
+        self.client_address = (hostname, port)
+        self.sc_client = SimpleUDPClient(hostname, port)
+        self.sc_client._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.sc_client._sock.bind(('',0))
+
+        # OSC Server for receiving messages.
+        self.dispatcher = Dispatcher()
+        self.osc_server_address = ("127.0.0.1", self.sc_client._sock.getsockname()[1])
+        ThreadingOSCUDPServer.allow_reuse_address = True
+        self.osc_server = ThreadingOSCUDPServer(self.osc_server_address, self.dispatcher)
+
+        self.osc_server_thread = Thread(target=self._osc_server_listen, daemon=True)
         self.osc_server_thread.start()
-        self.handlers = {
-            "/n_set": {},
-            "/b_info": {},
-            "/b_setn" : {},
-            "/done": {},
-            "/status.reply": None,
-            "/version.reply": None,
-            "/synced": None,
-            "/g_queryTree.reply": None
-        }
 
-        #-----------------------------------------------------------------------
-        # Necessary when querying a node ID for add actions.
-        #-----------------------------------------------------------------------
+        # For callback timeouts
+        self.event = Event()
+        
+        # SC node ID for Add actions
         self.id = 0
-        try:
-            self.sync()
-        except SuperColliderConnectionError as e:
-            self.osc_server.free()
-            self.osc_server = None
-            raise e
 
-    def __del__(self):
-        if  self.osc_server:
-            self.osc_server.free()
-            self.osc_server = None
-        self.osc_server_thread.join()
+        self.sync()
 
-    def sync(self):
-        """
-        Causes the server to immediately execute and flush all asynchronous commands.
-        This command is always synchronous so blocks the current thread.
+    # ------------------- Client Messages ------------------- #
+    def _send_msg(self, address, *args):
+        self.sc_client.send_message(address, [*args])
 
-        This can be used as a `ping` functionality to check that the server is running
-        and responding.
-        """
-        self._send_msg("/sync")
-        return self._await_response("/synced", None, lambda n: n)
-    
+    def sync(self, ping_id = 1):
+        def _handler(address, *args):
+            return args
+
+        self._send_msg("/sync", ping_id)
+        return self._await_response("/synced", None, _handler)
+
     def query_tree(self, group=None):
-        self._send_msg("/g_queryTree", group.id if group else 0, 0)
-        return self._await_response("/g_queryTree.reply")
+        def _handler(address, *args):
+            return args
 
-    def get_status(self, callback=None, blocking=True):
+        self._send_msg("/g_queryTree", group.id if group else 0, 0)
+        return self._await_response("/g_queryTree.reply", callback=_handler)
+    
+    def get_status(self):
         """
         Query the current Server status, including the number of active units, CPU
         load, etc.
@@ -88,28 +86,25 @@ class Server(object):
                 'sample_rate_actual': 44100.07866992249
             }
         """
-        def _handler(args):
-            args_dict = {
-                "num_ugens": args[1],
-                "num_synths": args[2],
-                "num_groups": args[3],
-                "num_synthdefs": args[4],
-                "cpu_average": args[5],
-                "cpu_peak": args[6],
-                "sample_rate_nominal": args[7],
-                "sample_rate_actual": args[8],
-            }
-            if callback:
-                callback(args_dict)
-            return args_dict
+
+        def _handler(address, *args):
+            status_dict = {
+                    "num_ugens": args[1],
+                    "num_synths": args[2],
+                    "num_groups": args[3],
+                    "num_synthdefs": args[4],
+                    "cpu_average": args[5],
+                    "cpu_peak": args[6],
+                    "sample_rate_nominal": args[7],
+                    "sample_rate_actual": args[8]}
+                
+            return status_dict
 
         self._send_msg("/status")
-        if blocking:
-            return self._await_response("/status.reply", None, _handler)
-        elif callback:
-            self._add_handler("/status.reply", None, _handler)
 
-    def get_version(self, callback=None, blocking=True):
+        return self._await_response("/status.reply", None, _handler)
+
+    def get_version(self):
         """
         Returns the current Server version.
 
@@ -124,77 +119,60 @@ class Server(object):
                 'commit_hash': "67a1eb18"
             }
         """
-        def _handler(args):
-            args_dict = {
-                "program_name": args[0],
-                "version_major": args[1],
-                "version_minor": args[2],
-                "version_patch": args[3],
-                "git_branch": args[4],
-                "commit_hash": args[5]
-            }
-            if callback:
-                callback(args_dict)
-            return args_dict
 
+        def _handler(*args):
+            version_dict = {
+                    "program_name": args[1],
+                    "version_major": args[2],
+                    "version_minor": args[3],
+                    "version_patch": args[4],
+                    "git_branch": args[5],
+                    "commit_hash": args[6]}
+                
+            return version_dict
+    
         self._send_msg("/version")
-        if blocking:
-            return self._await_response("/version.reply", None, _handler)
-        elif callback:
-            self._add_handler("/version.reply", None, _handler)
 
-    def _send_msg(self, msg, *args):
-        liblo.send(self.client_address, msg, *args)
+        return self._await_response("/version.reply", None, _handler)
 
-    def _await_response(self, address, match_args=(), callback=lambda rv=None: rv):
-        event = threading.Event()
+    # ------------------- Callback Timeout Logic ------------------- #
+    def _await_response(self, address, match_args=(), callback=None):
+
         rv = None
-
-        def callback_with_timeout(*args):
-            event.set()
+        # Sets the thread event when message is received
+        # It also overwrites the callback (dispatcher) function to capture the return value.
+        # This is necessary because the dispatcher handler can't return anything.
+        # Make sure to unmap the callback before it is overwritten to avoid duplicate callbacks.
+        def _callback_with_timeout(*args):
+            self.event.set()
             if callback:
                 nonlocal rv
-                rv = callback(*args)
+                rv = callback(address, *args[1:])
 
-        self._add_handler(address, match_args, callback_with_timeout)
-        responded_before_timeout = event.wait(globals.RESPONSE_TIMEOUT)
+        self.dispatcher.map(address, _callback_with_timeout)
+
+        responded_before_timeout = self.event.wait(globals.RESPONSE_TIMEOUT)
         if not responded_before_timeout:
             raise SuperColliderConnectionError("Connection to SuperCollider server timed out. Is scsynth running?")
+        elif responded_before_timeout:
+            self.event.clear()
+
+        self.dispatcher.unmap(address, _callback_with_timeout)
 
         return rv
 
-    def _add_handler(self, address, match_args, callback):
-        assert address in self.handlers
+    # ------------------- OSC Server Thread ------------------- #
+    def _osc_server_listen(self):
+        logger.debug(f'Python OSC Serving @ {self.osc_server_address}')
+        self.osc_server.serve_forever()
+        logger.warning(f'OSC Server @ {self.osc_server_address} Stopped!')
 
-        if isinstance(self.handlers[address], dict):
-            self.handlers[address][tuple(match_args)] = callback
-        else:
-            self.handlers[address] = callback
 
-    def _osc_handler(self, address, args):
-        logger.debug("Received OSC: %s, %s" % (address, args))
-        if address == "/n_set":
-            node_id, parameter, value = tuple(args)
-            if (node_id, parameter) in self.handlers["/n_set"]:
-                self.handlers["/n_set"][(node_id, parameter)](value)
-        elif address == "/b_info":
-            buffer_id, *values = tuple(args)
-            if (buffer_id,) in self.handlers["/b_info"]:
-                self.handlers["/b_info"][(buffer_id,)](values)
-        elif address == "/b_setn":
-            buffer_id, start_frame, stop_frame, *values = tuple(args)
-            if (buffer_id,) in self.handlers["/b_setn"]:
-                self.handlers["/b_setn"][(buffer_id,)](values)
-        elif address == "/done":
-            if tuple(args) in self.handlers["/done"]:
-                self.handlers["/done"][tuple(args)]()
-        elif address in self.handlers and self.handlers[address]:
-            self.handlers[address](args)
-        elif address == "/fail":
-            logger.warning("Received failure: %s" % args)
-        else:
-            pass
+    def clear_all_handlers(address):
+        """ Useful for cleaning up after using handlers with blocking=False.
 
-    def _osc_server_read(self):
-        while self.osc_server is not None:
-            self.osc_server.recv(10)
+        """
+        for addr, handlers in self.dispatcher._map.items():
+            for handler in handlers.copy():
+                self.dispatcher.unmap(address, handler)
+
